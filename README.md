@@ -42,31 +42,34 @@ This repository contains the architecture and API definition for a coupon manage
 
 ## Architectural Decisions
 
-1. API Gateway
-- Handles API requests and routes them to appropriate Lambda functions.
-- Provides authentication and authorization using API keys or JWT tokens.
-- Manages API documentation using Swagger/OpenAPI.
+| Component              | Decision                                                                                                  |
+|------------------------|-----------------------------------------------------------------------------------------------------------|
+| API Gateway            | Handles API requests and routes them to appropriate Lambda functions.                                     |
+| API Gateway            | Provides authentication and authorization using API keys or JWT tokens.                                   |
+| API Gateway            | Manages API documentation using Swagger/OpenAPI.                                                          |
+| Lambda                 | Serverless compute for implementing API logic.                                                            |
+| Lambda                 | Separate Lambda functions for different API endpoints (e.g: create coupon; assign coupon; redeem coupon). |
+| Lambda                 | Lambda functions written in Node.js using Express.js framework.                                           |
+| DynamoDB               | NoSQL database for storing coupon books; coupons; and user assignments.                                   |
+| DynamoDB               | Tables for coupon books; coupons; and user-coupon assignments.                                            |
+| DynamoDB               | DynamoDB Streams to trigger Lambda functions on data changes (e.g. coupon redemption).                    |
+| Node.js and Express.js | Node.js runtime for Lambda functions.                                                                     |
+| Node.js and Express.js | Express.js framework for building RESTful APIs within Lambda functions.                                   |
+| Node.js and Express.js | Middleware for request validation; error handling; and logging.                                           |
+| Swagger/OpenAPI        | Define API endpoints; request/response models; and authentication schemes.                                |
+| Swagger/OpenAPI        | Generate API documentation for developers.                                                                |
+| Swagger/OpenAPI        | Swagger UI for testing API endpoints.                                                                     |
+| Concurrency            | Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.                   |
+| Security               | Implement input validation; output encoding; and rate limiting to prevent abuse.                          |
+| Performance            | Optimize DynamoDB queries and Lambda function execution time.                                             |
+| Scalability            | Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.                                       |
+| Maintainability        | The system shall be easy to maintain and update.                                                          |
+| Reliability            | The system shall be reliable and consistently perform its functions correctly.                            |
+| Deployability          | The system shall be easily deployable to a cloud platform like AWS or GCP.                                |
+| Data Integrity         | The system shall ensure data integrity and consistency.                                                   |
 
-2. Lambda
-- Serverless compute for implementing API logic.
-- Separate Lambda functions for different API endpoints (e.g., create coupon, assign coupon, redeem coupon).
-- Lambda functions written in Node.js using Express.js framework.
 
-3. DynamoDB
-- NoSQL database for storing coupon books, coupons, and user assignments.
-- Tables for coupon books, coupons, and user-coupon assignments.
-- DynamoDB Streams to trigger Lambda functions on data changes (e.g., coupon redemption).
-
-4. Node.js and Express.js
-- Node.js runtime for Lambda functions.
-- Express.js framework for building RESTful APIs within Lambda functions.
-- Middleware for request validation, error handling, and logging.
-
-5. Swagger/OpenAPI
-- Generate API documentation for developers.
-- Swagger UI for testing API endpoints.
-
-6. Additional Considerations
+## Additional Considerations
 - Concurrency: Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.
 - Security: Implement input validation, output encoding, and rate limiting to prevent abuse.
 - Performance: Optimize DynamoDB queries and Lambda function execution time.
