@@ -1,4 +1,4 @@
-# coupon-book-service
+# Coupon Book Service
 This repository contains the architecture and API definition for a coupon management service. Features include:
 
 * Coupon book creation and management.
@@ -8,6 +8,37 @@ This repository contains the architecture and API definition for a coupon manage
 * Flexible coupon code generation based on patterns.
 * Bulk upload of pre-generated coupon code lists.
 * High-level architecture diagrams and API specifications.
+
+## Functional Requirements
+
+| Functional Requirements                 | Description                                                                                                                                                                                            |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Create Coupon Book                      | The system shall allow businesses to create new coupon books.                                                                                                                                          |
+| Upload Coupon Codes                     | The system shall allow uploading a list of codes to a given coupon book.                                                                                                                               |
+| Generate Coupon Codes                   | The system shall allow generating coupon codes following a pattern up to a specified total amount.                                                                                                     |
+| Assign Coupon to User                   | The system shall allow assigning a coupon code to a user.                                                                                                                                              |
+| Redeem Coupon                           | The system shall allow users to redeem coupons.                                                                                                                                                        |
+| Lock Coupon                             | The system shall allow temporarily locking a coupon during redemption attempts.                                                                                                                        |
+| Set Coupon Book Parameters              | The system shall allow setting parameters at the coupon book level, such as whether codes can be redeemed more than once per user and the maximum number of codes per coupon book assigned per member. |
+| Get User's Assigned Coupons             | The system shall allow retrieving a list of coupon codes assigned to a user.                                                                                                                           |
+| Redeem Coupon Multiple Times (Optional) | The system shall allow redeeming a coupon code multiple times per user based on a coupon book parameter.                                                                                               |
+| Limit Codes per User (Optional)         | The system shall allow limiting the number of codes per coupon book assigned to a user based on a coupon book parameter.                                                                               |
+
+## Non Functional Requirements
+
+| Non-Functional Requirements | Description                                                                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| Security                    | The system shall ensure secure access to coupon data and prevent unauthorized access.                                              |
+| Performance                 | The system shall handle a high volume of requests efficiently.                                                                     |
+| Concurrency                 | The system shall manage concurrent operations, especially coupon redemption, to prevent race conditions and data integrity issues. |
+| Scalability                 | The system shall be able to scale to accommodate increasing numbers of users and coupons.                                          |
+| Availability                | The system shall be highly available to ensure uninterrupted service.                                                              |
+| Usability                   | The API shall be easy to use and understand for developers.                                                                        |
+| Maintainability             | The system shall be easy to maintain and update.                                                                                   |
+| Reliability                 | The system shall be reliable and consistently perform its functions correctly.                                                     |
+| Deployability               | The system shall be easily deployable to a cloud platform like AWS or GCP.                                                         |
+| Data Integrity              | The system shall ensure data integrity and consistency.                                                                            |
+
 
 ## Architectural Decisions
 
