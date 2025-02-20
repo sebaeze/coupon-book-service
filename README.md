@@ -82,6 +82,10 @@ The system exposes the following RESTful API endpoints:
 | POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
 | GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
 
+## High Level Architectural Solution
+
+![alt text](./image/coupon-book-service-high-level-architecture.drawio.png)
+
 ## High Level Database Design
 
 | Table                 | Partition Key | Sort Key     | Field                 | Description                                                       | Relationship         |            |             |   |
