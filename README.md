@@ -9,6 +9,47 @@ This repository contains the architecture and API definition for a coupon manage
 * Bulk upload of pre-generated coupon code lists.
 * High-level architecture diagrams and API specifications.
 
+## High Level Architectural Solution
+
+![alt text](./image/coupon-book-service-high-level-architecture.drawio.png)
+
+## API Endpoints
+The system exposes the following RESTful API endpoints:
+
+| HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
+|-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST        | /coupons                | Creates a new coupon book. The request body should include parameters like the coupon book name, validity period, maximum redemptions per user, and code generation pattern.                |
+| POST        | /coupons/codes          | Uploads a list of codes to an existing coupon book. This is optional, as codes can also be generated automatically. The request body should include the coupon book ID and a list of codes. |
+| POST        | /coupons/assign         | Assigns a new random coupon code to a user from the specified coupon book. The request body should include the user ID and the coupon book ID.                                              |
+| POST        | /coupons/assign/{code}  | Assigns a specific coupon code to a user. The request body should include the user ID and the coupon code.                                                                                  |
+| POST        | /coupons/lock/{code}    | Locks a coupon for redemption (temporary). This is typically used when a user initiates the redemption process to prevent other users from redeeming the same coupon.                       |
+| POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
+| GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
+
+
+## High Level Database Design
+
+| Table                 | Partition Key | Sort Key     | Field                 | Description                                                       | Relationship         |            |             |   |
+|-----------------------|---------------|--------------|-----------------------|-------------------------------------------------------------------|----------------------|------------|-------------|---|
+| CouponBooks           | couponBookId  |              | couponBookId          | Unique identifier for the coupon book                             |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | name                  | Name of the coupon book                                           |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | description           | Description of the coupon book                                    |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | maxRedemptionsPerUser | Maximum number of times a user can redeem coupons from this book  |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | maxCodesPerUser       | Maximum number of coupons from this book a user can be assigned   |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | codePattern           | Pattern used for generating coupon codes (if applicable)          |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | createdAt             | Timestamp of when the coupon book was created                     |                      |            |             |   |
+| CouponBooks           | couponBookId  |              | updatedAt             | Timestamp of when the coupon book was last updated                |                      |            |             |   |
+| Coupons               | couponBookId  | code         | couponBookId          | Coupon book this coupon belongs to                                | 1:N with CouponBooks |            |             |   |
+| Coupons               | couponBookId  | code         | code                  | Unique code of the coupon within the book                         |                      |            |             |   |
+| Coupons               | couponBookId  | code         | status                | Status of the coupon (e.g.                                        | 'active'             | 'inactive' | 'redeemed') |   |
+| Coupons               | couponBookId  | code         | redeemedBy            | List of user IDs who redeemed this coupon                         |                      |            |             |   |
+| Coupons               | couponBookId  | code         | assignedTo            | User ID to whom this coupon is assigned                           |                      |            |             |   |
+| Coupons               | couponBookId  | code         | redeemedAt            | Timestamp of when the coupon was redeemed                         |                      |            |             |   |
+| UserCouponAssignments | userId        | couponBookId | userId                | Unique identifier of the user                                     |                      |            |             |   |
+| UserCouponAssignments | userId        | couponBookId | couponBookId          | Coupon book from which codes are assigned                         | N:1 with Coupons     |            |             |   |
+| UserCouponAssignments | userId        | couponBookId | assignedCodes         | List of codes assigned to the user from the specified coupon book |                      |            |             |   |
+
+
 ## Functional Requirements
 
 | Functional Requirements                 | Description                                                                                                                                                                                            |
@@ -67,46 +108,6 @@ This repository contains the architecture and API definition for a coupon manage
 | Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                           |
 | Performance     | Optimize DynamoDB queries and Lambda function execution time.                                              |
 | Scalability     | Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.                                        |
-
-
-## API Endpoints
-The system exposes the following RESTful API endpoints:
-
-| HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
-|-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST        | /coupons                | Creates a new coupon book. The request body should include parameters like the coupon book name, validity period, maximum redemptions per user, and code generation pattern.                |
-| POST        | /coupons/codes          | Uploads a list of codes to an existing coupon book. This is optional, as codes can also be generated automatically. The request body should include the coupon book ID and a list of codes. |
-| POST        | /coupons/assign         | Assigns a new random coupon code to a user from the specified coupon book. The request body should include the user ID and the coupon book ID.                                              |
-| POST        | /coupons/assign/{code}  | Assigns a specific coupon code to a user. The request body should include the user ID and the coupon code.                                                                                  |
-| POST        | /coupons/lock/{code}    | Locks a coupon for redemption (temporary). This is typically used when a user initiates the redemption process to prevent other users from redeeming the same coupon.                       |
-| POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
-| GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
-
-## High Level Architectural Solution
-
-![alt text](./image/coupon-book-service-high-level-architecture.drawio.png)
-
-## High Level Database Design
-
-| Table                 | Partition Key | Sort Key     | Field                 | Description                                                       | Relationship         |            |             |   |
-|-----------------------|---------------|--------------|-----------------------|-------------------------------------------------------------------|----------------------|------------|-------------|---|
-| CouponBooks           | couponBookId  |              | couponBookId          | Unique identifier for the coupon book                             |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | name                  | Name of the coupon book                                           |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | description           | Description of the coupon book                                    |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | maxRedemptionsPerUser | Maximum number of times a user can redeem coupons from this book  |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | maxCodesPerUser       | Maximum number of coupons from this book a user can be assigned   |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | codePattern           | Pattern used for generating coupon codes (if applicable)          |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | createdAt             | Timestamp of when the coupon book was created                     |                      |            |             |   |
-| CouponBooks           | couponBookId  |              | updatedAt             | Timestamp of when the coupon book was last updated                |                      |            |             |   |
-| Coupons               | couponBookId  | code         | couponBookId          | Coupon book this coupon belongs to                                | 1:N with CouponBooks |            |             |   |
-| Coupons               | couponBookId  | code         | code                  | Unique code of the coupon within the book                         |                      |            |             |   |
-| Coupons               | couponBookId  | code         | status                | Status of the coupon (e.g.                                        | 'active'             | 'inactive' | 'redeemed') |   |
-| Coupons               | couponBookId  | code         | redeemedBy            | List of user IDs who redeemed this coupon                         |                      |            |             |   |
-| Coupons               | couponBookId  | code         | assignedTo            | User ID to whom this coupon is assigned                           |                      |            |             |   |
-| Coupons               | couponBookId  | code         | redeemedAt            | Timestamp of when the coupon was redeemed                         |                      |            |             |   |
-| UserCouponAssignments | userId        | couponBookId | userId                | Unique identifier of the user                                     |                      |            |             |   |
-| UserCouponAssignments | userId        | couponBookId | couponBookId          | Coupon book from which codes are assigned                         | N:1 with Coupons     |            |             |   |
-| UserCouponAssignments | userId        | couponBookId | assignedCodes         | List of codes assigned to the user from the specified coupon book |                      |            |             |   |
 
 
 ## Additional Considerations
