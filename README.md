@@ -39,34 +39,49 @@ This repository contains the architecture and API definition for a coupon manage
 | Deployability               | The system shall be easily deployable to a cloud platform like AWS or GCP.                                                         |
 | Data Integrity              | The system shall ensure data integrity and consistency.                                                                            |
 
+## Assumptions
+
+- Only backend
+- 
 
 ## Architectural Decisions
 
-| Component              | Decision                                                                                                  |
-|------------------------|-----------------------------------------------------------------------------------------------------------|
-| API Gateway            | Handles API requests and routes them to appropriate Lambda functions.                                     |
-| API Gateway            | Provides authentication and authorization using API keys or JWT tokens.                                   |
-| API Gateway            | Manages API documentation using Swagger/OpenAPI.                                                          |
-| Lambda                 | Serverless compute for implementing API logic.                                                            |
-| Lambda                 | Separate Lambda functions for different API endpoints (e.g: create coupon; assign coupon; redeem coupon). |
-| Lambda                 | Lambda functions written in Node.js using Express.js framework.                                           |
-| DynamoDB               | NoSQL database for storing coupon books; coupons; and user assignments.                                   |
-| DynamoDB               | Tables for coupon books; coupons; and user-coupon assignments.                                            |
-| DynamoDB               | DynamoDB Streams to trigger Lambda functions on data changes (e.g. coupon redemption).                    |
-| Node.js and Express.js | Node.js runtime for Lambda functions.                                                                     |
-| Node.js and Express.js | Express.js framework for building RESTful APIs within Lambda functions.                                   |
-| Node.js and Express.js | Middleware for request validation; error handling; and logging.                                           |
-| Swagger/OpenAPI        | Define API endpoints; request/response models; and authentication schemes.                                |
-| Swagger/OpenAPI        | Generate API documentation for developers.                                                                |
-| Swagger/OpenAPI        | Swagger UI for testing API endpoints.                                                                     |
-| Concurrency            | Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.                   |
-| Security               | Implement input validation; output encoding; and rate limiting to prevent abuse.                          |
-| Performance            | Optimize DynamoDB queries and Lambda function execution time.                                             |
-| Scalability            | Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.                                       |
-| Maintainability        | The system shall be easy to maintain and update.                                                          |
-| Reliability            | The system shall be reliable and consistently perform its functions correctly.                            |
-| Deployability          | The system shall be easily deployable to a cloud platform like AWS or GCP.                                |
-| Data Integrity         | The system shall ensure data integrity and consistency.                                                   |
+| Component       | Decision                                                                                                   |
+|-----------------|------------------------------------------------------------------------------------------------------------|
+| API Gateway     | Handles API requests and routes them to appropriate Lambda functions.                                      |
+| API Gateway     | Provides authentication and authorization using API keys or JWT tokens.                                    |
+| API Gateway     | Manages API documentation using Swagger/OpenAPI.                                                           |
+| Lambda          | Serverless compute for implementing API logic.                                                             |
+| Lambda          | Separate Lambda functions for different API endpoints (e.g.; create coupon; assign coupon; redeem coupon). |
+| Lambda          | Lambda functions written in Node.js.                                                                       |
+| DynamoDB        | NoSQL database for storing coupon books; coupons; and user assignments.                                    |
+| DynamoDB        | Tables for coupon books; coupons; and user-coupon assignments.                                             |
+| DynamoDB        | DynamoDB Streams to trigger Lambda functions on data changes (e.g.; coupon redemption).                    |
+| Node.js         | Node.js runtime for Lambda functions.                                                                      |
+| Swagger/OpenAPI | Define API endpoints; request/response models; and authentication schemes.                                 |
+| Swagger/OpenAPI | Generate API documentation for developers.                                                                 |
+| Swagger/OpenAPI | Swagger UI for testing API endpoints.                                                                      |
+| SQS             | SQS queues for decoupling asynchronous tasks (e.g.; sending notifications; updating user points).          |
+| SQS             | Lambda functions triggered by SQS events to process asynchronous tasks.                                    |
+| Concurrency     | Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.                    |
+| Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                           |
+| Performance     | Optimize DynamoDB queries and Lambda function execution time.                                              |
+| Scalability     | Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.                                        |
+
+
+## API Endpoints
+The system exposes the following RESTful API endpoints:
+
+| HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
+|-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST        | /coupons                | Creates a new coupon book. The request body should include parameters like the coupon book name, validity period, maximum redemptions per user, and code generation pattern.                |
+| POST        | /coupons/codes          | Uploads a list of codes to an existing coupon book. This is optional, as codes can also be generated automatically. The request body should include the coupon book ID and a list of codes. |
+| POST        | /coupons/assign         | Assigns a new random coupon code to a user from the specified coupon book. The request body should include the user ID and the coupon book ID.                                              |
+| POST        | /coupons/assign/{code}  | Assigns a specific coupon code to a user. The request body should include the user ID and the coupon code.                                                                                  |
+| POST        | /coupons/lock/{code}    | Locks a coupon for redemption (temporary). This is typically used when a user initiates the redemption process to prevent other users from redeeming the same coupon.                       |
+| POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
+| GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
+
 
 
 ## Additional Considerations
