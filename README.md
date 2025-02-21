@@ -1,62 +1,22 @@
 # Coupon Book Service
-This repository contains the architecture and API definition for a coupon management service. Features include:
-
-- Coupon book creation and management.
-- User assignment and tracking of coupon usage.
-- Atomic redemption operations with temporary locking to prevent double redemption.
-- API-driven coupon redemption.
-- Flexible coupon code generation based on patterns.
-- Bulk upload of pre-generated coupon code lists.
-- High-level architecture diagrams and API specifications.
+This repository contains the architecture and API definition for a coupon management service. 
 
 ## High Level Architectural Solution
 
 ![alt text](./image/coupon-book-service-high-level-architecture.drawio.png)
-
-## API Endpoints
-
-The system exposes the following RESTful API endpoints:
-
-
-| HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
-|-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST        | /coupons                | Creates a new coupon book. The request body should include parameters like the coupon book name, validity period, maximum redemptions per user, and code generation pattern.                |
-| POST        | /coupons/codes          | Uploads a list of codes to an existing coupon book. This is optional, as codes can also be generated automatically. The request body should include the coupon book ID and a list of codes. |
-| POST        | /coupons/assign         | Assigns a new random coupon code to a user from the specified coupon book. The request body should include the user ID and the coupon book ID.                                              |
-| POST        | /coupons/assign/{code}  | Assigns a specific coupon code to a user. The request body should include the user ID and the coupon code.                                                                                  |
-| POST        | /coupons/lock/{code}    | Locks a coupon for redemption (temporary). This is typically used when a user initiates the redemption process to prevent other users from redeeming the same coupon.                       |
-| POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
-| GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
 
 
 ## High Level Database Design
 
 ![alt text](./image/database-design.drawio.png)
 
+![Database Design](0_databaseDesign.md)
 
-| Table                 | Field                  | Description                                                      | Relationship               | Data Type    |
-|-----------------------|------------------------|------------------------------------------------------------------|----------------------------|--------------|
-| CouponBooks           | couponBookId           | Unique identifier for the coupon book                            | Primary Key                | INT          |
-| CouponBooks           | name                   | Name of the coupon book                                          |                            | VARCHAR(255) |
-| CouponBooks           | description            | Description of the coupon book                                   |                            | TEXT         |
-| CouponBooks           | maxRedemptionsPerUser  | Maximum number of times a user can redeem coupons from this book |                            | INT          |
-| CouponBooks           | maxCodesPerUser        | Maximum number of coupons from this book a user can be assigned  |                            | INT          |
-| CouponBooks           | codePattern            | Pattern used for generating coupon codes (if applicable)         |                            | VARCHAR(255) |
-| CouponBooks           | createdAt              | Timestamp of when the coupon book was created                    |                            | TIMESTAMP    |
-| CouponBooks           | updatedAt              | Timestamp of when the coupon book was last updated               |                            | TIMESTAMP    |
-| Coupons               | couponId               | Unique identifier for the coupon                                 | Primary Key                | INT          |
-| Coupons               | couponBookId           | Coupon book this coupon belongs to                               | Foreign Key to CouponBooks | INT          |
-| Coupons               | code                   | Unique code of the coupon within the book                        |                            | VARCHAR(255) |
-| Coupons               | status                 | Status of the coupon (e.g. 'active'; 'inactive'; 'redeemed')     |                            | VARCHAR(255) |
-| Coupons               | redeemedBy             | User ID who redeemed this coupon                                 | Foreign Key to Users       | INT          |
-| Coupons               | assignedTo             | User ID to whom this coupon is assigned                          | Foreign Key to Users       | INT          |
-| Coupons               | redeemedAt             | Timestamp of when the coupon was redeemed                        |                            | TIMESTAMP    |
-| Users                 | userId                 | Unique identifier of the user                                    | Primary Key                | INT          |
-| UserCouponAssignments | userCouponAssignmentId | Unique identifier for the assignment                             | Primary Key                | INT          |
-| UserCouponAssignments | userId                 | User who is assigned the coupon                                  | Foreign Key to Users       | INT          |
-| UserCouponAssignments | couponId               | Coupon that is assigned                                          | Foreign Key to Coupons     | INT          |
+## Pseudocode
 
-
+The basic code using node.js can be seen in the folder 'src'
+- ![coupons](./src/coupons.handler.mjs)
+- ![users](./src/users.handler.mjs)
 
 ## Deployment Strategy
 
@@ -138,18 +98,24 @@ The deployment strategy for this solution leverages AWS Lambda and API Gateway t
 - Security: Implement input validation, output encoding, and rate limiting to prevent abuse.
 - Performance: Optimize RDS by including read replicas in queries queries and Lambda function execution time.
 - Scalability: Leverage AWS auto-scaling for Lambda functions.
-- Example Endpoint Implementation
 
-POST /coupons/redeem/{code}
+## API Endpoints
 
-* Lambda function triggered by API Gateway.
-* Retrieve coupon and user assignment from RDS.
-* Check if coupon is valid and not already redeemed.
-* Use optimistic locking to update coupon status to 'redeemed'.
-* Return success or error response.
+The system exposes the following RESTful API endpoints:
 
+| HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
+|-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST        | /coupons                | Creates a new coupon book. The request body should include parameters like the coupon book name, validity period, maximum redemptions per user, and code generation pattern.                |
+| POST        | /coupons/codes          | Uploads a list of codes to an existing coupon book. This is optional, as codes can also be generated automatically. The request body should include the coupon book ID and a list of codes. |
+| POST        | /coupons/assign         | Assigns a new random coupon code to a user from the specified coupon book. The request body should include the user ID and the coupon book ID.                                              |
+| POST        | /coupons/assign/{code}  | Assigns a specific coupon code to a user. The request body should include the user ID and the coupon code.                                                                                  |
+| POST        | /coupons/lock/{code}    | Locks a coupon for redemption (temporary). This is typically used when a user initiates the redemption process to prevent other users from redeeming the same coupon.                       |
+| POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
+| GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
 
-## Swagger endpoint
+Note: The Swagger/OpenAPI specification can be seen in the following path --> ![swagger.yaml](swagger-coupon-book-service.yaml)
+
+## Detailed information about the endpoints
 
 ### /coupons
 
