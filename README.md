@@ -10,7 +10,7 @@ This repository contains the architecture and API definition for a coupon manage
 
 ![alt text](./image/database-design.drawio.png)
 
-[Database Design](0_databaseDesign.md)
+*** [Extra information about the database design](0_databaseDesign.md)
 
 ## Pseudocode
 
@@ -113,7 +113,7 @@ The system exposes the following RESTful API endpoints:
 | POST        | /coupons/redeem/{code}  | Redeems a coupon (permanent). The request body may include information about the redemption context, such as the order ID or transaction details.                                           |
 | GET         | /users/{userId}/coupons | Retrieves the user's assigned coupon codes, including their status (e.g., active, redeemed, expired).                                                                                       |
 
-Note: The Swagger/OpenAPI specification can be seen in the following path --> ![swagger.yaml](swagger-coupon-book-service.yaml)
+Note: The Swagger/OpenAPI specification can be seen in the following path --> [swagger.yaml](swagger-coupon-book-service.yaml)
 
 ## Detailed information about the endpoints
 
