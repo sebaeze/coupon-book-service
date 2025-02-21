@@ -14,7 +14,9 @@ This repository contains the architecture and API definition for a coupon manage
 ![alt text](./image/coupon-book-service-high-level-architecture.drawio.png)
 
 ## API Endpoints
+
 The system exposes the following RESTful API endpoints:
+
 
 | HTTP Method | Endpoint                | Description                                                                                                                                                                                 |
 |-------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -111,11 +113,6 @@ The deployment strategy for this solution leverages AWS Lambda and API Gateway t
 | Deployability               | The system shall be easily deployable to a cloud platform like AWS or GCP.                                                         |
 | Data Integrity              | The system shall ensure data integrity and consistency.                                                                            |
 
-## Assumptions
-
-- Only backend
-- 
-
 ## Architectural Decisions
 
 | Component       | Decision                                                                                                    |
@@ -132,14 +129,10 @@ The deployment strategy for this solution leverages AWS Lambda and API Gateway t
 | Swagger/OpenAPI | Define API endpoints; request/response models; and authentication schemes.                                  |
 | Swagger/OpenAPI | Generate API documentation for developers.                                                                  |
 | Swagger/OpenAPI | Swagger UI for testing API endpoints.                                                                       |
-| SQS             | SQS queues for decoupling asynchronous tasks (e.g. sending notifications; updating user points).            |
-| SQS             | Lambda functions triggered by SQS events to process asynchronous tasks.                                     |
 | Concurrency     | Use database transactions and row-level locking in RDS to handle concurrent requests for coupon redemption. |
 | Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                            |
 | Performance     | Optimize database queries and Lambda function execution time.                                               |
 | Scalability     | Leverage AWS RDS features like read replicas and Aurora Serverless for scalability.                         |
-
-
 
 ## Additional Considerations
 - Security: Implement input validation, output encoding, and rate limiting to prevent abuse.
@@ -155,6 +148,143 @@ POST /coupons/redeem/{code}
 * Use optimistic locking to update coupon status to 'redeemed'.
 * Return success or error response.
 
+
+## Swagger endpoint
+
+### /coupons
+
+#### POST
+##### Summary:
+
+Create a new coupon book
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 201 | Coupon book created successfully |
+| 400 | Invalid request body |
+| 500 | Internal server error |
+
+### /coupons/{couponBookId}/codes
+
+#### POST
+##### Summary:
+
+Upload a list of codes to a coupon book
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| couponBookId | path | ID of the coupon book | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Codes uploaded successfully |
+| 400 | Invalid request body or coupon book not found |
+| 500 | Internal server error |
+
+### /coupons/assign
+
+#### POST
+##### Summary:
+
+Assign a random coupon code to a user
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Coupon assigned successfully |
+| 400 | Invalid request body or no available coupons |
+| 500 | Internal server error |
+
+### /coupons/assign/{code}
+
+#### POST
+##### Summary:
+
+Assign a specific coupon code to a user
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | Coupon code to assign | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Coupon assigned successfully |
+| 400 | Invalid request body or coupon not found |
+| 500 | Internal server error |
+
+### /coupons/lock/{code}
+
+#### POST
+##### Summary:
+
+Lock a coupon for redemption
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | Coupon code to lock | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Coupon locked successfully |
+| 400 | Invalid coupon code or coupon already locked |
+| 500 | Internal server error |
+
+### /coupons/redeem/{code}
+
+#### POST
+##### Summary:
+
+Redeem a coupon
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | Coupon code to redeem | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Coupon redeemed successfully |
+| 400 | Invalid coupon code or coupon already redeemed |
+| 500 | Internal server error |
+
+### /users/{userId}/coupons
+
+#### GET
+##### Summary:
+
+Get a user's assigned coupon codes
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| userId | path | ID of the user | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | List of assigned coupon codes |
+| 400 | Invalid user ID |
+| 500 | Internal server error |
 
 ## Reference architecture
 - https://www.geeksforgeeks.org/design-coupon-and-voucher-management-system/

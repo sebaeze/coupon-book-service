@@ -1,0 +1,168 @@
+openapi: 3.0.0
+info:
+  title: Coupon Book Service API
+  version: v1
+
+paths:
+  /coupons:
+    post:
+      summary: Create a new coupon book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                maxRedemptionsPerUser:
+                  type: integer
+                maxCodesPerUser:
+                  type: integer
+                codePattern:
+                  type: string
+      responses:
+        '201':
+          description: Coupon book created successfully
+        '400':
+          description: Invalid request body
+        '500':
+          description: Internal server error
+
+  /coupons/{couponBookId}/codes:
+    post:
+      summary: Upload a list of codes to a coupon book
+      parameters:
+        - in: path
+          name: couponBookId
+          schema:
+            type: string
+          required: true
+          description: ID of the coupon book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Codes uploaded successfully
+        '400':
+          description: Invalid request body or coupon book not found
+        '500':
+          description: Internal server error
+
+  /coupons/assign:
+    post:
+      summary: Assign a random coupon code to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                couponBookId:
+                  type: string
+      responses:
+        '200':
+          description: Coupon assigned successfully
+        '400':
+          description: Invalid request body or no available coupons
+        '500':
+          description: Internal server error
+
+  /coupons/assign/{code}:
+    post:
+      summary: Assign a specific coupon code to a user
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+          description: Coupon code to assign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Coupon assigned successfully
+        '400':
+          description: Invalid request body or coupon not found
+        '500':
+          description: Internal server error
+
+  /coupons/lock/{code}:
+    post:
+      summary: Lock a coupon for redemption
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+          description: Coupon code to lock
+      responses:
+        '200':
+          description: Coupon locked successfully
+        '400':
+          description: Invalid coupon code or coupon already locked
+        '500':
+          description: Internal server error
+
+  /coupons/redeem/{code}:
+    post:
+      summary: Redeem a coupon
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+          description: Coupon code to redeem
+      responses:
+        '200':
+          description: Coupon redeemed successfully
+        '400':
+          description: Invalid coupon code or coupon already redeemed
+        '500':
+          description: Internal server error
+
+  /users/{userId}/coupons:
+    get:
+      summary: Get a user's assigned coupon codes
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+      responses:
+        '200':
+          description: List of assigned coupon codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Invalid user ID
+        '500':
+          description: Internal server error
