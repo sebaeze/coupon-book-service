@@ -56,9 +56,30 @@ The system exposes the following RESTful API endpoints:
 
 
 
-## High-Level Deployment Strategy
+## Deployment Strategy
 
-The AWS cloud provides a lot of options for deployment, in this case 
+The deployment strategy for this solution leverages AWS Lambda and API Gateway to create a serverless architecture, maximizing scalability and cost-efficiency. Here's a high-level overview:
+
+### Core Components:
+
+- Lambda Functions: Each endpoint will be handled by a separate Lambda function, promoting modularity and independent scaling.
+- API Gateway: API Gateway acts as the entry point, routing requests to the appropriate Lambda function based on the HTTP method and path.
+- ElastiCache (Redis): A Redis cluster will be used to cache frequently accessed data, improving performance and reducing database load.
+
+### Deployment Process:
+
+- Infrastructure as Code: The entire infrastructure, including Lambda functions, API Gateway, and ElastiCache, will be defined using a SAM (Serverless Application Model) template. This template uses CloudFormation for provisioning and managing resources in a declarative manner.
+- Automated Deployment: The SAM template will be deployed using the AWS CLI or AWS Management Console, automating the creation and configuration of all resources.
+- Endpoint Configuration: API Gateway will be configured to handle routing, authorization, and request/response transformations.
+- Caching: The /users/{userId}/coupons endpoint will utilize Redis for caching, with appropriate cache invalidation strategies to ensure data consistency.
+
+### Benefits:
+
+- Serverless Simplicity: No server management is needed, reducing operational overhead.
+- Scalability and Availability: Lambda automatically scales to handle varying traffic, ensuring high availability.
+- Cost-Effectiveness: Pay only for actual usage, optimizing resource costs.
+- Increased Agility: Faster deployments and easier updates due to the modular nature of the architecture.
+- Improved Performance: Caching enhances response times and reduces database load. 
 
 ## Functional Requirements
 
