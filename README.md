@@ -10,13 +10,13 @@ This repository contains the architecture and API definition for a coupon manage
 
 ![alt text](./image/database-design.drawio.png)
 
-![Database Design](0_databaseDesign.md)
+[Database Design](0_databaseDesign.md)
 
 ## Pseudocode
 
 The basic code using node.js can be seen in the folder 'src'
-- ![coupons](./src/coupons.handler.mjs)
-- ![users](./src/users.handler.mjs)
+- [coupons](./src/coupons.handler.mjs)
+- [users](./src/users.handler.mjs)
 
 ## Deployment Strategy
 
