@@ -1,17 +1,16 @@
 const mysql = require('mysql2/promise');
 
-// Replace with your RDS database credentials
 const dbConfig = {
-  host: 'your-rds-endpoint',
-  user: 'your-db-user',
-  password: 'your-db-password',
-  database: 'your-db-name',
+  host: process.env.ENDPOINT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 };
 
 exports.handler = async (event) => {
-  const path = event.path; // e.g., "/users/{userId}/coupons"
-  const method = event.httpMethod; // e.g., "GET"
-  const pathParameters = event.pathParameters; // For endpoints with path parameters
+  const path = event.path;
+  const method = event.httpMethod;
+  const pathParameters = event.pathParameters;
 
   let connection;
   try {
