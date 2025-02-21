@@ -29,6 +29,9 @@ The system exposes the following RESTful API endpoints:
 
 ## High Level Database Design
 
+![alt text](./image/database-design.drawio.png)
+
+
 | Table                 | Partition Key | Sort Key     | Field                 | Description                                                       | Relationship         |            |             |   |
 |-----------------------|---------------|--------------|-----------------------|-------------------------------------------------------------------|----------------------|------------|-------------|---|
 | CouponBooks           | couponBookId  |              | couponBookId          | Unique identifier for the coupon book                             |                      |            |             |   |
@@ -49,6 +52,9 @@ The system exposes the following RESTful API endpoints:
 | UserCouponAssignments | userId        | couponBookId | couponBookId          | Coupon book from which codes are assigned                         | N:1 with Coupons     |            |             |   |
 | UserCouponAssignments | userId        | couponBookId | assignedCodes         | List of codes assigned to the user from the specified coupon book |                      |            |             |   |
 
+## High-Level Deployment Strategy
+
+The AWS cloud provides a lot of options for deployment, in this case 
 
 ## Functional Requirements
 
@@ -102,8 +108,6 @@ The system exposes the following RESTful API endpoints:
 | Swagger/OpenAPI | Define API endpoints; request/response models; and authentication schemes.                                 |
 | Swagger/OpenAPI | Generate API documentation for developers.                                                                 |
 | Swagger/OpenAPI | Swagger UI for testing API endpoints.                                                                      |
-| SQS             | SQS queues for decoupling asynchronous tasks (e.g.; sending notifications; updating user points).          |
-| SQS             | Lambda functions triggered by SQS events to process asynchronous tasks.                                    |
 | Concurrency     | Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.                    |
 | Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                           |
 | Performance     | Optimize DynamoDB queries and Lambda function execution time.                                              |
