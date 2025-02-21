@@ -1,13 +1,13 @@
 # Coupon Book Service
 This repository contains the architecture and API definition for a coupon management service. Features include:
 
-* Coupon book creation and management.
-* User assignment and tracking of coupon usage.
-* Atomic redemption operations with temporary locking to prevent double redemption.
-* API-driven coupon redemption.
-* Flexible coupon code generation based on patterns.
-* Bulk upload of pre-generated coupon code lists.
-* High-level architecture diagrams and API specifications.
+- Coupon book creation and management.
+- User assignment and tracking of coupon usage.
+- Atomic redemption operations with temporary locking to prevent double redemption.
+- API-driven coupon redemption.
+- Flexible coupon code generation based on patterns.
+- Bulk upload of pre-generated coupon code lists.
+- High-level architecture diagrams and API specifications.
 
 ## High Level Architectural Solution
 
@@ -121,15 +121,15 @@ The AWS cloud provides a lot of options for deployment, in this case
 
 
 ## Additional Considerations
-- Concurrency: Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.
 - Security: Implement input validation, output encoding, and rate limiting to prevent abuse.
-- Performance: Optimize DynamoDB queries and Lambda function execution time.
-- Scalability: Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.
+- Performance: Optimize RDS by including read replicas in queries queries and Lambda function execution time.
+- Scalability: Leverage AWS auto-scaling for Lambda functions.
 - Example Endpoint Implementation
+
 POST /coupons/redeem/{code}
 
 * Lambda function triggered by API Gateway.
-* Retrieve coupon and user assignment from DynamoDB.
+* Retrieve coupon and user assignment from RDS.
 * Check if coupon is valid and not already redeemed.
 * Use optimistic locking to update coupon status to 'redeemed'.
 * Return success or error response.
