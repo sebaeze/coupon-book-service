@@ -32,25 +32,28 @@ The system exposes the following RESTful API endpoints:
 ![alt text](./image/database-design.drawio.png)
 
 
-| Table                 | Partition Key | Sort Key     | Field                 | Description                                                       | Relationship         |
-|-----------------------|---------------|--------------|-----------------------|-------------------------------------------------------------------|----------------------|
-| CouponBooks           | couponBookId  |              | couponBookId          | Unique identifier for the coupon book                             |                      |
-| CouponBooks           | couponBookId  |              | name                  | Name of the coupon book                                           |                      |
-| CouponBooks           | couponBookId  |              | description           | Description of the coupon book                                    |                      |
-| CouponBooks           | couponBookId  |              | maxRedemptionsPerUser | Maximum number of times a user can redeem coupons from this book  |                      |
-| CouponBooks           | couponBookId  |              | maxCodesPerUser       | Maximum number of coupons from this book a user can be assigned   |                      |
-| CouponBooks           | couponBookId  |              | codePattern           | Pattern used for generating coupon codes (if applicable)          |                      |
-| CouponBooks           | couponBookId  |              | createdAt             | Timestamp of when the coupon book was created                     |                      |
-| CouponBooks           | couponBookId  |              | updatedAt             | Timestamp of when the coupon book was last updated                |                      |
-| Coupons               | couponBookId  | code         | couponBookId          | Coupon book this coupon belongs to                                | 1:N with CouponBooks |
-| Coupons               | couponBookId  | code         | code                  | Unique code of the coupon within the book                         |                      |
-| Coupons               | couponBookId  | code         | status                | Status of the coupon (e.g. 'active','inactive','redeemed')        |                      |
-| Coupons               | couponBookId  | code         | redeemedBy            | List of user IDs who redeemed this coupon                         |                      |
-| Coupons               | couponBookId  | code         | assignedTo            | User ID to whom this coupon is assigned                           |                      |
-| Coupons               | couponBookId  | code         | redeemedAt            | Timestamp of when the coupon was redeemed                         |                      |
-| UserCouponAssignments | userId        | couponBookId | userId                | Unique identifier of the user                                     |                      |
-| UserCouponAssignments | userId        | couponBookId | couponBookId          | Coupon book from which codes are assigned                         | N:1 with Coupons     |
-| UserCouponAssignments | userId        | couponBookId | assignedCodes         | List of codes assigned to the user from the specified coupon book |                      |
+| Table                 | Field                  | Description                                                      | Relationship               | Data Type    |
+|-----------------------|------------------------|------------------------------------------------------------------|----------------------------|--------------|
+| CouponBooks           | couponBookId           | Unique identifier for the coupon book                            | Primary Key                | INT          |
+| CouponBooks           | name                   | Name of the coupon book                                          |                            | VARCHAR(255) |
+| CouponBooks           | description            | Description of the coupon book                                   |                            | TEXT         |
+| CouponBooks           | maxRedemptionsPerUser  | Maximum number of times a user can redeem coupons from this book |                            | INT          |
+| CouponBooks           | maxCodesPerUser        | Maximum number of coupons from this book a user can be assigned  |                            | INT          |
+| CouponBooks           | codePattern            | Pattern used for generating coupon codes (if applicable)         |                            | VARCHAR(255) |
+| CouponBooks           | createdAt              | Timestamp of when the coupon book was created                    |                            | TIMESTAMP    |
+| CouponBooks           | updatedAt              | Timestamp of when the coupon book was last updated               |                            | TIMESTAMP    |
+| Coupons               | couponId               | Unique identifier for the coupon                                 | Primary Key                | INT          |
+| Coupons               | couponBookId           | Coupon book this coupon belongs to                               | Foreign Key to CouponBooks | INT          |
+| Coupons               | code                   | Unique code of the coupon within the book                        |                            | VARCHAR(255) |
+| Coupons               | status                 | Status of the coupon (e.g. 'active'; 'inactive'; 'redeemed')     |                            | VARCHAR(255) |
+| Coupons               | redeemedBy             | User ID who redeemed this coupon                                 | Foreign Key to Users       | INT          |
+| Coupons               | assignedTo             | User ID to whom this coupon is assigned                          | Foreign Key to Users       | INT          |
+| Coupons               | redeemedAt             | Timestamp of when the coupon was redeemed                        |                            | TIMESTAMP    |
+| Users                 | userId                 | Unique identifier of the user                                    | Primary Key                | INT          |
+| UserCouponAssignments | userCouponAssignmentId | Unique identifier for the assignment                             | Primary Key                | INT          |
+| UserCouponAssignments | userId                 | User who is assigned the coupon                                  | Foreign Key to Users       | INT          |
+| UserCouponAssignments | couponId               | Coupon that is assigned                                          | Foreign Key to Coupons     | INT          |
+
 
 
 ## High-Level Deployment Strategy
@@ -94,25 +97,27 @@ The AWS cloud provides a lot of options for deployment, in this case
 
 ## Architectural Decisions
 
-| Component       | Decision                                                                                                   |
-|-----------------|------------------------------------------------------------------------------------------------------------|
-| API Gateway     | Handles API requests and routes them to appropriate Lambda functions.                                      |
-| API Gateway     | Provides authentication and authorization using API keys or JWT tokens.                                    |
-| API Gateway     | Manages API documentation using Swagger/OpenAPI.                                                           |
-| Lambda          | Serverless compute for implementing API logic.                                                             |
-| Lambda          | Separate Lambda functions for different API endpoints (e.g.; create coupon; assign coupon; redeem coupon). |
-| Lambda          | Lambda functions written in Node.js.                                                                       |
-| DynamoDB        | NoSQL database for storing coupon books; coupons; and user assignments.                                    |
-| DynamoDB        | Tables for coupon books; coupons; and user-coupon assignments.                                             |
-| DynamoDB        | DynamoDB Streams to trigger Lambda functions on data changes (e.g.; coupon redemption).                    |
-| Node.js         | Node.js runtime for Lambda functions.                                                                      |
-| Swagger/OpenAPI | Define API endpoints; request/response models; and authentication schemes.                                 |
-| Swagger/OpenAPI | Generate API documentation for developers.                                                                 |
-| Swagger/OpenAPI | Swagger UI for testing API endpoints.                                                                      |
-| Concurrency     | Use optimistic locking in DynamoDB to handle concurrent requests for coupon redemption.                    |
-| Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                           |
-| Performance     | Optimize DynamoDB queries and Lambda function execution time.                                              |
-| Scalability     | Leverage AWS auto-scaling for Lambda functions and DynamoDB tables.                                        |
+| Component       | Decision                                                                                                    |
+|-----------------|-------------------------------------------------------------------------------------------------------------|
+| API Gateway     | Handles API requests and routes them to appropriate Lambda functions.                                       |
+| API Gateway     | Provides authentication and authorization using API keys or JWT tokens.                                     |
+| API Gateway     | Manages API documentation using Swagger/OpenAPI.                                                            |
+| Lambda          | Serverless compute for implementing API logic.                                                              |
+| Lambda          | Separate Lambda functions for different API endpoints (e.g. create coupon; assign coupon; redeem coupon).   |
+| Lambda          | Lambda functions written in Node.js.                                                                        |
+| RDS             | Relational database for storing coupon books; coupons; and user assignments.                                |
+| RDS             | Tables for coupon books; coupons; users; and user-coupon assignments.                                       |
+| Node.js         | Node.js runtime for Lambda functions.                                                                       |
+| Swagger/OpenAPI | Define API endpoints; request/response models; and authentication schemes.                                  |
+| Swagger/OpenAPI | Generate API documentation for developers.                                                                  |
+| Swagger/OpenAPI | Swagger UI for testing API endpoints.                                                                       |
+| SQS             | SQS queues for decoupling asynchronous tasks (e.g. sending notifications; updating user points).            |
+| SQS             | Lambda functions triggered by SQS events to process asynchronous tasks.                                     |
+| Concurrency     | Use database transactions and row-level locking in RDS to handle concurrent requests for coupon redemption. |
+| Security        | Implement input validation; output encoding; and rate limiting to prevent abuse.                            |
+| Performance     | Optimize database queries and Lambda function execution time.                                               |
+| Scalability     | Leverage AWS RDS features like read replicas and Aurora Serverless for scalability.                         |
+
 
 
 ## Additional Considerations
